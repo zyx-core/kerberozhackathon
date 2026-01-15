@@ -8,15 +8,70 @@ window.addEventListener('load', () => {
 // Countdown Timer
 const eventDate = new Date('Jan 30, 2026 09:00:00').getTime();
 
+// Store previous values to detect changes
+const prevValues = {
+    days: null,
+    hours: null,
+    minutes: null,
+    seconds: null
+};
+
+// Animate countdown value with slide effect
+function animateCountdownValue(elementId, newValue) {
+    const element = document.getElementById(elementId);
+    const formattedValue = newValue < 10 ? '0' + newValue : String(newValue);
+    
+    // Skip animation if value hasn't changed or it's the first render
+    if (prevValues[elementId] === formattedValue) {
+        return;
+    }
+    
+    // First render - just set the value without animation
+    if (prevValues[elementId] === null) {
+        element.innerText = formattedValue;
+        prevValues[elementId] = formattedValue;
+        return;
+    }
+    
+    // Value changed - animate!
+    prevValues[elementId] = formattedValue;
+    
+    const parent = element.parentElement;
+    
+    // Add slide-out class to current element
+    element.classList.add('slide-out');
+    
+    // Create new element for the incoming number
+    const newElement = document.createElement('span');
+    newElement.id = elementId;
+    newElement.innerText = formattedValue;
+    newElement.classList.add('slide-in');
+    newElement.style.position = 'absolute';
+    newElement.style.width = '100%';
+    newElement.style.left = '0';
+    
+    // Add new element to parent
+    parent.appendChild(newElement);
+    
+    // Clean up after animation completes
+    setTimeout(() => {
+        element.remove();
+        newElement.style.position = '';
+        newElement.style.width = '';
+        newElement.style.left = '';
+        newElement.classList.remove('slide-in');
+    }, 400); // Match animation duration
+}
+
 function updateCountdown() {
     const now = new Date().getTime();
     const distance = eventDate - now;
 
     if (distance < 0) {
-        document.getElementById('days').innerText = "00";
-        document.getElementById('hours').innerText = "00";
-        document.getElementById('minutes').innerText = "00";
-        document.getElementById('seconds').innerText = "00";
+        animateCountdownValue('days', 0);
+        animateCountdownValue('hours', 0);
+        animateCountdownValue('minutes', 0);
+        animateCountdownValue('seconds', 0);
         clearInterval(timerInterval);
         return;
     }
@@ -26,10 +81,10 @@ function updateCountdown() {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    document.getElementById('days').innerText = days < 10 ? '0' + days : days;
-    document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
-    document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
-    document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+    animateCountdownValue('days', days);
+    animateCountdownValue('hours', hours);
+    animateCountdownValue('minutes', minutes);
+    animateCountdownValue('seconds', seconds);
 }
 
 const timerInterval = setInterval(updateCountdown, 1000);
@@ -95,7 +150,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Scroll Reveal Animation
-const revealElements = document.querySelectorAll('.reveal');
+const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-stagger, .reveal-prize');
 
 const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
